@@ -41,6 +41,11 @@ $ iris session <name_of_Iris_instance>
 USER> zn "KAFKA"
 KAFKA> do ##class(Kafka.Data.Orders).Populate(500)
 ```
+#### If Kafka cluster is running remotely ie. on a different host than InterSystems IRIS, change the Kafka Settings in the production. Otherwise skip to Start the Production
+Navigate to [Kafka.TraderProduction](http://<ip_address_of_iris>:<webserver_port_of_iris>/csp/kafka/EnsPortal.ProductionConfig.zen?PRODUCTION=Kafka.TraderProduction)
+Click on the EnsLib.Kafka.Service. Then on the right panel in the Settings tab, expand the Kafka Settings and uodate the Server field with "<external_ip_address_of_host_running_kafka_cluster>:9092"
+Click "Apply" button.
+Then make an identical change to EnsLib.Kafka.Operation and "Apply"
 #### Start the Production
 Navigate to [Kafka.TraderProduction](http://<ip_address_of_iris>:<webserver_port_of_iris>/csp/kafka/EnsPortal.ProductionConfig.zen?PRODUCTION=Kafka.TraderProduction), by clicking the "Start" button
 ### Produce and consume events via shell sessions in the Kafka container
