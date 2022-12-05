@@ -93,7 +93,7 @@ Settings file to let you code in VSCode with [VSCode ObjectScript plugin](https:
 ### .vscode/launch.json
 Config file if you want to debug with VSCode ObjectScript
 
-#### Start InterSystem IRIS terminal in running to test it
+#### Start InterSystem IRIS terminal to test it
 ```
 $ iris session <name_of_Iris_instance>
 USER> zn "KAFKA"
