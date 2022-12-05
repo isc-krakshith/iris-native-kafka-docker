@@ -47,7 +47,7 @@ Click on the EnsLib.Kafka.Service. Then on the right panel in the Settings tab, 
 Click "Apply" button.
 Then make an identical change to EnsLib.Kafka.Operation and "Apply"
 #### Start the Production
-Navigate to [Kafka.TraderProduction](http://<ip_address_of_iris>:<webserver_port_of_iris>/csp/kafka/EnsPortal.ProductionConfig.zen?PRODUCTION=Kafka.TraderProduction), by clicking the "Start" button
+Navigate to [Kafka.TraderProduction](http://<ip_address_of_iris>:<webserver_port_of_iris>/csp/kafka/EnsPortal.ProductionConfig.zen?PRODUCTION=Kafka.TraderProduction), and click the "Start" button
 ### Produce and consume events via shell sessions in the Kafka container
 #### EXECUTE 2x CONTAINER SHELLS
 ++++++++++++++++++++++++++
