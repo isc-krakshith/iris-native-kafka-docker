@@ -23,9 +23,6 @@ $ docker-compose up -d
 ### Wait for KAFKA cluster to be ready
 Zookeeper, Broker and Control Center will each be running in their own containers. Navigate to [KAFKA Control Center](http://<host_running_container>:9021)
 You will need for the cluster to become stable before it is ready for use. Reload the page on the browser unitl the cluster is showing as healthy.
-
-3. On the native IRIS instance:
-
 ## Solution
 ![Architecture Diagram](./Images/KafkaContainerNativeIRISArchitecture.png)
 
