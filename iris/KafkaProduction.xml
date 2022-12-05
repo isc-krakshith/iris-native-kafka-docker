@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26" zv="IRIS for UNIX (Apple macOS for Apple Silicon) 2022.1 (Build 209U)" ts="2022-12-05 10:28:54">
+<Class name="Kafka.Data.Orders">
+<Abstract>0</Abstract>
+<DdlAllowed>1</DdlAllowed>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%Library.Persistent,%Populate</Super>
+<TimeChanged>66434,44863.137609631</TimeChanged>
+<TimeCreated>66434,44862.824295215</TimeCreated>
+<LegacyInstanceContext>0</LegacyInstanceContext>
+
+<Property name="orderId">
+<Type>%Library.Integer</Type>
+<SqlColumnNumber>2</SqlColumnNumber>
+<Parameter name="MAXVAL" value="1800"/>
+<Parameter name="MINVAL" value="1"/>
+</Property>
+
+<Property name="dateTime">
+<Type>%Library.PosixTime</Type>
+<SqlColumnNumber>3</SqlColumnNumber>
+</Property>
+
+<Property name="security">
+<Type>%Library.String</Type>
+<SqlColumnNumber>4</SqlColumnNumber>
+<Parameter name="VALUELIST" value="-SECA-SECB-SECC-SECD"/>
+</Property>
+
+<Property name="vol">
+<Type>%Library.Integer</Type>
+<SqlColumnNumber>5</SqlColumnNumber>
+<Parameter name="MAXVAL" value="1500"/>
+<Parameter name="MINVAL" value="1"/>
+</Property>
+
+<Property name="buy">
+<Type>%Library.Boolean</Type>
+<SqlColumnNumber>6</SqlColumnNumber>
+</Property>
+
+<Property name="bidAsk">
+<Type>%Library.Double</Type>
+<Required>1</Required>
+<SqlColumnNumber>7</SqlColumnNumber>
+<Parameter name="MAXVAL" value="99"/>
+<Parameter name="MINVAL" value="25"/>
+</Property>
+
+<Method name="Match">
+<Description>
+Return set of orders which can be fullfilled</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>buy:%Boolean,tickerName:%String,volume:%Numeric,price:%Numeric</FormalSpec>
+<ReturnType>%SQL.StatementResult</ReturnType>
+<SqlProc>1</SqlProc>
+<ReturnResultsets>1</ReturnResultsets>
+<Implementation><![CDATA[
+	#dim %sqlcontext as %ProcedureContext
+	#dim resultSet as %SQL.StatementResult
+	set resultSet = $$$NULLOREF
+	#dim statement as %SQL.Statement
+	set statement = ##class(%SQL.Statement).%New(1) // ODBC mode
+    set comparisonOperator = ">="
+    if buy   = 1 {
+        set comparisonOperator = "<="
+    }
+    set sql = "SELECT * FROM KAFKA_DATA.ORDERS"
+    set sql = sql _ " WHERE BUY = ? AND security = ? AND VOL >= ? AND BIDASK " _comparisonOperator_" ?" 
+
+	set status = statement.%Prepare(sql)
+	if $$$ISOK(status) {
+		set resultSet = statement.%Execute(buy, tickerName, volume, price)
+		if (resultSet.%SQLCODE = 0) {
+			// successful %Execute
+
+			// for testing using Terminal
+			//while resultSet.%Next() {
+			//	write !!, resultSet.id, ?5, resultSet.dateTime, ?35, resultSet.vol, ?40, resultSet.bidAsk
+			//}
+
+			// for xDBC
+			// do %sqlcontext.AddResultSet(resultSet)
+		}
+		else {
+			// error during %Execute
+			set %sqlcontext.%SQLCODE = resultSet.%SQLCODE
+			set %sqlcontext.%Message = resultSet.%Message
+		} 
+	}
+	else {
+		// error during %Prepare: bad SQL
+		#dim ex as %Exception.StatusException
+		set ex = ##class(%Exception.StatusException).CreateFromStatus(status)
+		set %sqlcontext.%SQLCODE = ex.AsSQLCODE()
+		// 4th ":" piece contains %msg value
+		set %sqlcontext.%Message = $piece(ex.AsSQLMessage(), ":", 4)
+	}
+	return resultSet  // return results to other server-side code
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Storage.Persistent</Type>
+<DataLocation>^Kafka.Data.OrdersD</DataLocation>
+<DefaultData>OrdersDefaultData</DefaultData>
+<IdLocation>^Kafka.Data.OrdersD</IdLocation>
+<IndexLocation>^Kafka.Data.OrdersI</IndexLocation>
+<StreamLocation>^Kafka.Data.OrdersS</StreamLocation>
+<ExtentSize>500</ExtentSize>
+<Data name="OrdersDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>id</Value>
+</Value>
+<Value name="3">
+<Value>dateTime</Value>
+</Value>
+<Value name="4">
+<Value>security</Value>
+</Value>
+<Value name="5">
+<Value>vol</Value>
+</Value>
+<Value name="6">
+<Value>buy</Value>
+</Value>
+<Value name="7">
+<Value>bidAsk</Value>
+</Value>
+<Value name="8">
+<Value>orderId</Value>
+</Value>
+</Data>
+<Property name="%%CLASSNAME">
+<Selectivity>100.0000%</Selectivity>
+<AverageFieldSize>2</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,0,16,$lb("-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000","-10000000000000000000"),$lb(21,21,21,21,21,21,21,21,21,21,21,21,21,21,21),$lb(758198320,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,758198320))</Histogram>
+</Property>
+<Property name="%%ID">
+<Selectivity>1</Selectivity>
+<AverageFieldSize>3.49</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,1,0,$lb("1","34","68","102","136","170","203","236","269","302","335","368","401","434","467","500"),$lb(0,0,0,1,1,0,1,1,0,1,1,0,1,1,0),$lb(822083584,822083584,859045888,859045888,909639680,909639680,825242112,808583168,859176960,859176960,925892608,825700352,842019584,808648704,859176960,859176960,909705216,842414336,858796544,808583168,859111424,859111424,909639680,859191296,875573504,808517632,859045888,859045888,909574144,875968256,892350464,892350464))</Histogram>
+</Property>
+<Property name="bidAsk">
+<Selectivity>1.3333%</Selectivity>
+<AverageFieldSize>10</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,1,0,$lb($double(25),$double(30),$double(34),$double(41),$double(45),$double(51),$double(54),$double(61),$double(66),$double(71),$double(77),$double(81),$double(86),$double(91),$double(96),$double(99)),$lb(8,9,8,9,8,9,8,9,8,9,8,9,8,9,9),$lb(842334208,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,960036864))</Histogram>
+</Property>
+<Property name="buy">
+<Selectivity>50.0000%</Selectivity>
+<AverageFieldSize>2.48</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,0,0,$lb(0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1),$lb(1,1,1,1,1,1,1,0,1,1,1,1,1,1,1),$lb(805306368,0,0,0,0,0,0,0,0,0,0,0,0,0,0,805306368,822083584,0,0,0,0,0,0,0,0,0,0,0,0,0,0,822083584))</Histogram>
+</Property>
+<Property name="dateTime">
+<Selectivity>0.2000%</Selectivity>
+<AverageFieldSize>10</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,0,0,$lb(-6919736006743953819,-6919475748095856640,-6919152259909353764,-6918863483174609556,-6918590117274528979,-6918398379560729191,-6918218998862315874,-6917936282947166109,-6917723589194496813,1153035389190219778,1153255088676162390,1153560040488647394,1153837771026838666,1154085327673126698,1154304272001700408,1154577556842175872),$lb(5,5,4,5,5,5,4,5,0,4,4,4,3,4,4),$lb(758528305,926103088,876033335,876033335,825569842,959526194,943207987,943076148,892940337,892940337,859387955,859387955,842086457,942813496,926495542,959657522,926036789,758528305,825308467,808662323,842347824,842347824,892743728,892743728,942880567,859321143,875575349,808990003,858797106,858797106,892811061,825308468))</Histogram>
+</Property>
+<Property name="orderId">
+<Selectivity>0.2304%</Selectivity>
+<AverageFieldSize>3.85</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,1,0,$lb(3,100,234,358,453,587,689,832,949,1080,1174,1303,1438,1543,1654,1800),$lb(0,0,0,0,0,0,0,0,0,1,1,1,1,1,1),$lb(855638016,855638016,825241600,825241600,842216448,842216448,859125760,859125760,875901696,875901696,892876544,892876544,909654272,909654272,942879232,942879232,959723776,959723776,825243696,808988672,825701376,825701376,858796800,858796800,875771904,875771904,892613376,892613376,909456384,909456384,942682112,825765936))</Histogram>
+</Property>
+<Property name="security">
+<Selectivity>25.0000%</Selectivity>
+<AverageFieldSize>6</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,0,0,$lb(" SECA"," SECA"," SECA"," SECA"," SECA"," SECB"," SECB"," SECB"," SECC"," SECC"," SECC"," SECC"," SECD"," SECD"," SECD"," SECD"),$lb(6,6,6,6,4,6,6,4,6,6,6,4,6,6,6),$lb(542328131,0,0,0,0,0,0,0,0,1090519040,1107296256,0,0,0,0,1107296256,1124073472,0,0,0,0,0,0,1124073472,1140850688,0,0,0,0,0,0,542328131))</Histogram>
+</Property>
+<Property name="vol">
+<Selectivity>0.2309%</Selectivity>
+<AverageFieldSize>3.86</AverageFieldSize>
+<Histogram>$lb(.06666666666666666667,1,0,$lb(14,137,255,356,423,504,617,719,814,918,1010,1101,1209,1293,1371,1500),$lb(1,0,0,0,0,0,0,0,0,0,1,1,2,1,1),$lb(825491456,872415232,859242496,825440000,842347776,842347776,859125248,859125248,875705088,875705088,892351488,892351488,909195008,909195008,925972736,925972736,942748672,942748672,959526912,959526912,825241904,808529920,825241856,825241856,842021120,809041920,959643648,842609408,859255040,859255040,892350464,825569328))</Histogram>
+</Property>
+<SQLMap name="IDKEY">
+<BlockCount>-12</BlockCount>
+</SQLMap>
+<SQLMap name="orderIdIndex">
+<BlockCount>-4</BlockCount>
+</SQLMap>
+</Storage>
+</Class>
+
+
+<Class name="Kafka.TestKafkaMessagingClient">
+<Super>%RegisteredObject</Super>
+<TimeChanged>66434,44862.810340756</TimeChanged>
+<TimeCreated>66434,44862.810340756</TimeCreated>
+
+<Method name="KafkaClient">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	#Dim client As %External.Messaging.KafkaClient = ""
+	Try {
+		Set settings = ##class(%External.Messaging.KafkaSettings).%New()
+		Set settings.groupId = "G3"
+		W "Settings: ", settings.ToJSON(), !
+
+		Set client = ##class(%External.Messaging.Client).CreateClient(settings, .tSC)
+		Quit:$$$ISERR(tSC)
+
+		W "Update consumer...", !
+		Set consumerSettings = "{""key.deserializer"":""org.apache.kafka.common.serialization.StringDeserializer""}"
+		Set tSC = client.UpdateConsumerConfig(consumerSettings)
+		Quit:$$$ISERR(tSC)
+
+		W "Update producer...", !
+		Set producerSettings = "{""key.serializer"":""org.apache.kafka.common.serialization.StringSerializer""}"
+		Set tSC = client.UpdateProducerConfig(producerSettings)
+		Quit:$$$ISERR(tSC)
+
+		W "Update admin...", !
+		Set adminSettings = ""
+		Set tSC = client.UpdateAdminConfig(adminSettings)
+		Quit:$$$ISERR(tSC)
+
+		// Create topic
+		W "Creating topic...", !
+		Set topic = "test-Bids-Asks"
+		#Dim queueSettings As %External.Messaging.KafkaTopicSettings = ##class(%External.Messaging.KafkaTopicSettings).%New()
+		Set queueSettings.numberOfPartitions = 1, queueSettings.replicationFactor = 1
+		W "Topic settings: ", queueSettings.ToJSON(), !
+		//Set tSC = client.CreateQueueOrTopic(topic, queueSettings.ToJSON())
+		//Set tSC = client.CreateTopic(topic, 1, 1)
+		Quit:$$$ISERR(tSC)
+
+		//Send message
+		W "Sending message...", !
+		Set value = "{""dateTime"":""2022-06-07T13:18:32.000"",""ref"":""OH77CBN3"", ""security"":""SECB"", ""bid"":0, ""ask"":50, ""vol"":400}", key = "testBidsAsksKey2"
+		Set msg = ##class(%External.Messaging.KafkaMessage).%New()
+		Set msg.topic = topic
+		Set msg.value = value
+		Set msg.key = key
+		W "Message: ", msg.ToJSON(), !
+		Set tSC = client.SendMessage(msg)
+		Quit:$$$ISERR(tSC)
+		
+		// Receive message
+		W "Receiving message...", !
+		//KafkaReceiveSettings will be avialable InterSystems IRIS v 2022.2 onwards
+		//until then we need to loop unitl the message is received back 
+		//#Dim receiveSettings As %External.Messaging.KafkaReceiveSettings = ##class(%External.Messaging.KafkaReceiveSettings).%New()
+		//Set receiveSettings.pollTimeout = 100000
+		//W "Receive settings: ", receiveSettings.ToJSON(), !
+		#Dim messages As %ListOfObjects
+        set messages = ""
+        set counter = 0
+        while 1 {
+		    Set tSC = client.ReceiveMessage(topic, .messages) // receiveSettings.ToJSON())
+            set counter = counter + 1
+            //w counter,!
+            Quit:messages.Size>0
+		    Quit:$$$ISERR(tSC)
+        }
+
+		For i=1:1:messages.Size {
+			Set msg = messages.GetAt(i)
+			W "Message: ", msg.ToJSON(), !
+		}
+
+		W "Deleting topic...", !
+		Do client.DeleteQueueOrTopic(topic)
+	}
+	Catch (ex) {
+		Set tSC = ex.AsStatus()
+	}
+	Do:client'="" client.Close()
+	Do $system.OBJ.DisplayError(tSC)
+	W "Done", !
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Kafka.TradeDecision">
+<TimeChanged>66434,44862.80529484</TimeChanged>
+<TimeCreated>66434,44862.80529484</TimeCreated>
+
+<Method name="Approve">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>message:%String</FormalSpec>
+<ReturnType>%Numeric</ReturnType>
+<Implementation><![CDATA[
+        set JSONobj = ##class(%DynamicAbstractObject).%FromJSON(message)
+        set bid = JSONobj.bid
+        set ask = JSONobj.ask
+        if ($DOUBLE(bid) >= $DOUBLE(ask))
+        {
+            return 1
+        }
+        elseif ($DOUBLE(bid)/($DOUBLE(ask)-$DOUBLE(bid))>=10)
+        {
+            return 1
+        }
+        return 0
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Kafka.TraderProcess">
+<ClassType>persistent</ClassType>
+<Super>Ens.BusinessProcess</Super>
+<TimeChanged>66434,44862.817317506</TimeChanged>
+<TimeCreated>66434,44862.817317506</TimeCreated>
+
+<Property name="TargetConfigName">
+<Type>Ens.DataType.ConfigName</Type>
+</Property>
+
+<Property name="Topic">
+<Type>%String</Type>
+</Property>
+
+<Parameter name="SETTINGS">
+<Default><![CDATA[TargetConfigName:Basic:selector?multiSelect=1&context={Ens.ContextSearch/ProductionItems?targets=1&productionName=@productionId},Topic:Basic]]></Default>
+</Parameter>
+
+<Method name="OnRequest">
+<FormalSpec>pRequest:EnsLib.Kafka.Message,*pResponse:Ens.Response</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	// Change topic and send it to target
+	set bidAskMsg = ##class(%DynamicAbstractObject).%FromJSON(pRequest.value)
+	set bid = bidAskMsg.bid
+	set ask = bidAskMsg.ask
+	set vol = bidAskMsg.vol
+
+	set buy = 1 //assume its a bid message
+	set price = bid
+	set type = "Bid"
+	set security = bidAskMsg.security
+	if (ask > 0) { //process it as an ask message
+		set buy = 0
+		set price = ask
+		set type = "Ask"
+	}
+	#dim matchingbidsAsks As %SQL.StatementResult
+	set matchingbidsAsks = ##class(Kafka.Data.Orders).Match(buy,security,vol,price)
+	if (matchingbidsAsks.%SQLCODE = 0) {
+		// successful %Execute
+
+		// for testing using Terminal
+		while matchingbidsAsks.%Next() {
+			Set tMsg = ##class(EnsLib.Kafka.Message).%New()
+			Set tMsg.topic = ..Topic
+			Set tMsg.key = pRequest.key
+			Set tMsg.value = "{""ref"":"_bidAskMsg.ref_","_type_"DateTime"":"_bidAskMsg.dateTime_",""OrderId"":"_matchingbidsAsks.orderId_","_type_",""OrderDateTime"":"_matchingbidsAsks.dateTime_",""Available"":"_matchingbidsAsks.vol_",""Fulfill"":"_vol_",""OfferPrice"":"_matchingbidsAsks.bidAsk_","_type_"Price"":"_price_"}"
+			do ..SendRequestAsync(..TargetConfigName, tMsg, 0)
+		}
+	}
+	else {
+		// error during %Execute
+		set %sqlcontext.%SQLCODE = matchingbidsAsks.%SQLCODE
+		set %sqlcontext.%Message = matchingbidsAsks.%Message
+	}
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Storage.Persistent</Type>
+<DefaultData>TraderProcessDefaultData</DefaultData>
+<Data name="TraderProcessDefaultData">
+<Subscript>"TraderProcess"</Subscript>
+<Value name="1">
+<Value>TargetConfigName</Value>
+</Value>
+<Value name="2">
+<Value>Topic</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Kafka.TraderProduction">
+<Super>Ens.Production</Super>
+<TimeChanged>66445,62581.448716</TimeChanged>
+<TimeCreated>66434,44862.810631173</TimeCreated>
+
+<XData name="ProductionDefinition">
+<Data><![CDATA[
+<Production Name="Kafka.TraderProduction" TestingEnabled="true" LogGeneralTraceEvents="false">
+  <Description></Description>
+  <ActorPoolSize>2</ActorPoolSize>
+  <Item Name="EnsLib.Kafka.Service" Category="" ClassName="EnsLib.Kafka.Service" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="TargetConfigNames">Kafka.TraderProcess</Setting>
+    <Setting Target="Adapter" Name="Topic">bids-Asks</Setting>
+    <Setting Target="Adapter" Name="GroupID">G1</Setting>
+    <Setting Target="Adapter" Name="Servers">localhost:9092</Setting>
+  </Item>
+  <Item Name="Kafka.TraderProcess" Category="" ClassName="Kafka.TraderProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="TargetConfigName">EnsLib.Kafka.Operation</Setting>
+    <Setting Target="Host" Name="Topic">trades</Setting>
+  </Item>
+  <Item Name="EnsLib.Kafka.Operation" Category="" ClassName="EnsLib.Kafka.Operation" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+    <Setting Target="Adapter" Name="Servers">localhost:9092</Setting>
+  </Item>
+</Production>
+]]></Data>
+</XData>
+</Class>
+</Export>

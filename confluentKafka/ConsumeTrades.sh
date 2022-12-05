@@ -1,0 +1,1 @@
+/bin/kafka-console-consumer --topic trades --bootstrap-server localhost:9092
