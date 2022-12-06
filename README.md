@@ -77,19 +77,6 @@ Then generate bid-ask events, one line at a time... After each event is produced
 ```
 {"dateTime":"2022-06-07T13:19:52.000","ref":"OH77EBN3", "security":"SECD", "bid":70, "ask":0, "vol":250}
 ```
-## What's inside the repository
-
-### Dockerfile
-
-Dockerfile which starts IRIS and imports Installer.cls and then runs the Installer.setup method, which creates KAFKA Namespace and imports ObjectScript code from /src and /testdata folders into it.
-
-### .vscode/settings.json
-
-Settings file to let you code in VSCode with [VSCode ObjectScript plugin](https://intersystems-community.github.io/vscode-objectscript/)
-
-### .vscode/launch.json
-Config file if you want to debug with VSCode ObjectScript
-
 #### Start InterSystem IRIS terminal to test it
 ```
 $ iris session <name_of_Iris_instance>
