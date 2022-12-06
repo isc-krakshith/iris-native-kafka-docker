@@ -1,5 +1,5 @@
 # iris-native-kafka-docker
-Demonstrate integration of InterSystems IRIS (version 2022.1 or later) running natively with Kafka running in a container either on the same host or remotely. If you're looking for a solution which has IRIS and Kafka both running in the same container, plesae [see here](https://github.com/isc-krakshith/iris-kafka-docker)
+Demonstrate integration of InterSystems IRIS (version 2022.1 or later) running natively with Kafka running in a container either on the same host or remotely. If you're looking for a solution which has IRIS and Kafka both running in the same container, plesae [see here](https://github.com/isc-krakshith/iris-kafka-docker) OR for a solution running IRIS and Kafka in separate containers, [see here]((https://github.com/isc-krakshith/iris-docker-kafka-docker)
 
 The Kafka cluster is adapted from the docker-composition sepcified [here](https://developer.confluent.io/quickstart/kafka-docker/). Control center container adds a GUI, albeit with limited use for this solution.
 
